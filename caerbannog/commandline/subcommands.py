@@ -4,8 +4,8 @@ import sys
 from argparse import Namespace
 from typing import List
 
-from caerbannog.logging import fmt, logger
 from caerbannog import context, password, secrets, target
+from caerbannog.logging import fmt, logger
 
 
 def apply(args: Namespace):

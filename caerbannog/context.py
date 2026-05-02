@@ -119,7 +119,10 @@ def groupname() -> str:
 def vars():
     return _context["vars"]
 
+
 T = TypeVar("T")
+
+
 def get_var(name: str, default: Optional[T] = None) -> Union[Any, T]:
     """
     Retrieves a variable using a dot-separated path. Returns `None` if the
@@ -134,6 +137,7 @@ def get_var(name: str, default: Optional[T] = None) -> Union[Any, T]:
         current = current[part]
 
     return current
+
 
 def env(variable=None):
     if variable is not None:

@@ -1,6 +1,6 @@
 import caerbannog.context as context
-from caerbannog.context import get_var
 import caerbannog.operations.host as host
+from caerbannog.context import get_var
 from caerbannog.operations import Do, Ensure, Handler
 from caerbannog.operations.filesystem import *
 from caerbannog.operations.subjects import *
