@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Container, Iterator
 from importlib import import_module
 
 from caerbannog import context
@@ -61,8 +61,11 @@ class TargetDescriptor:
         )
 
     def execute(
-        self, role_limit: list[str] | None = [], skip_roles: list[str] = []
+        self, role_limit: Container[str] | None = None, skip_roles: Container[str] = ()
     ) -> list[str]:
+        def should_skip(role: str) -> bool:
+            is_limited = role_limit is not None and role not in role_limit
+            return is_limited or role in skip_roles
 
         applied_roles = []
 
@@ -74,9 +77,7 @@ class TargetDescriptor:
 
         logger.info(f"Applying target {fmt.target(self._name)}")
         for role in self._roles:
-            if (
-                role_limit is not None and role not in role_limit
-            ) or role in skip_roles:
+            if should_skip(role):
                 continue
             apply_role(role)
             applied_roles.append(role)
