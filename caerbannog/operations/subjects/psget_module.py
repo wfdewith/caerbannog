@@ -1,5 +1,4 @@
 import subprocess
-from typing import Set, Union
 
 from caerbannog.logging import fmt
 from caerbannog.operations import Assertion, Change, DiffLine, Subject
@@ -23,7 +22,7 @@ class PsGetModule(Subject):
 
 
 class IsInstalled(Assertion):
-    _cache: Union[Set[str], None] = None
+    _cache: set[str] | None = None
 
     def __init__(self, name: str) -> None:
         descr = "is installed"
@@ -39,7 +38,7 @@ class IsInstalled(Assertion):
         self.register_change(Installed(self._package_name))
 
     @staticmethod
-    def _load_installed() -> Set[str]:
+    def _load_installed() -> set[str]:
         if IsInstalled._cache is not None:
             return IsInstalled._cache
 

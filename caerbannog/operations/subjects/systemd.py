@@ -1,6 +1,7 @@
 import subprocess
+from collections.abc import Callable
 from enum import StrEnum, auto
-from typing import Any, Callable
+from typing import Any
 
 from caerbannog import command, context
 from caerbannog.logging import fmt

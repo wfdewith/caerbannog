@@ -1,6 +1,6 @@
 import base64
 import re
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from Cryptodome import Random
 from Cryptodome.Cipher import AES
@@ -21,7 +21,7 @@ VERSION = "1"
 
 SECRET_MARKER = f"${HEADER}$"
 
-_cached_keys: Dict[str, bytes] = {}
+_cached_keys: dict[str, bytes] = {}
 
 
 def encrypt(plaintext: bytes, password: str, pretty=True) -> str:
@@ -76,7 +76,7 @@ def _lookup_key(salt: str, password: str) -> bytes:
     return key
 
 
-def _derive_key(password: str) -> Tuple[str, bytes]:
+def _derive_key(password: str) -> tuple[str, bytes]:
     salt = _encode(Random.get_random_bytes(SCRYPT_SALT_SIZE))
     key: Any = KDF.scrypt(password, salt, AES_KEY_SIZE, SCRYPT_N, SCRYPT_R, SCRYPT_P)
 
@@ -89,7 +89,7 @@ def _rederive_key(salt: str, password: str) -> bytes:
     return key
 
 
-def _encrypt(key: bytes, plaintext: bytes) -> Tuple[bytes, bytes, bytes]:
+def _encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
     aes = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = aes.encrypt_and_digest(plaintext)
 

@@ -1,5 +1,5 @@
+from collections.abc import Iterator
 from importlib import import_module
-from typing import Dict, Iterator, List, Optional
 
 from caerbannog import context
 from caerbannog.logging import LogContext, fmt, logger
@@ -28,15 +28,15 @@ def apply_role(role: str):
                 return
 
 
-_targets: Dict[str, "TargetDescriptor"] = {}
+_targets: dict[str, "TargetDescriptor"] = {}
 _current = None
 
 
 class TargetDescriptor:
     def __init__(self, name) -> None:
         self._name = name
-        self._requires: List[str] = []
-        self._roles: List[str] = []
+        self._requires: list[str] = []
+        self._roles: list[str] = []
 
     def depends_on(self, *names: str) -> "TargetDescriptor":
         self._requires.extend(names)
@@ -46,13 +46,13 @@ class TargetDescriptor:
         self._roles.extend(roles)
         return self
 
-    def roles(self) -> List[str]:
+    def roles(self) -> list[str]:
         return self._roles
 
     def name(self) -> str:
         return self._name
 
-    def dependencies(self) -> List["TargetDescriptor"]:
+    def dependencies(self) -> list["TargetDescriptor"]:
         return [target(name) for name in self._requires]
 
     def includes(self, name: str) -> bool:
@@ -61,8 +61,8 @@ class TargetDescriptor:
         )
 
     def execute(
-        self, role_limit: Optional[List[str]] = [], skip_roles: List[str] = []
-    ) -> List[str]:
+        self, role_limit: list[str] | None = [], skip_roles: list[str] = []
+    ) -> list[str]:
 
         applied_roles = []
 

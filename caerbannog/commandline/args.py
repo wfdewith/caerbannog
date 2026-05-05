@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from typing import Optional
 
 import argcomplete
 
@@ -7,7 +6,7 @@ from .. import target
 from . import subcommands
 
 
-def parse(dot_target: Optional[str]):
+def parse(dot_target: str | None):
     parser = ArgumentParser(
         description="Configure a local system with Caerbannog.",
     )

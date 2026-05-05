@@ -1,12 +1,11 @@
 import platform
-from typing import Optional
 
 
 def is_arch_linux():
     return is_linux("Arch Linux")
 
 
-def is_linux(distribution: Optional[str] = None):
+def is_linux(distribution: str | None = None):
     if platform.system() != "Linux":
         return False
 

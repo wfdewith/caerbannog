@@ -1,6 +1,6 @@
 import sys
+from collections.abc import Iterator
 from types import ModuleType
-from typing import Iterator
 
 import pytest
 

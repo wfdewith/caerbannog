@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from types import ModuleType
-from typing import Any, Callable, Dict, List, Optional, cast
+from typing import Any, cast
 
 from caerbannog import context, password, plugin
 from caerbannog.commandline import args
@@ -17,7 +18,7 @@ def commit():
         exit(1)
 
 
-def _load_target() -> Optional[str]:
+def _load_target() -> str | None:
     try:
         with open(".target", "r", encoding="utf-8") as f:
             return f.read().strip()
@@ -29,8 +30,8 @@ class Settings:
     def __init__(
         self,
         password_loader: Callable[[], str],
-        jinja_globals: Dict[str, Any],
-        plugins: Dict[str, ModuleType],
+        jinja_globals: dict[str, Any],
+        plugins: dict[str, ModuleType],
     ) -> None:
         self._password_loader = password_loader
         self._jinja_globals = jinja_globals
@@ -54,7 +55,7 @@ class SettingsBuilder:
         self._password_loader = name
         return self
 
-    def use_password_command(self, cmd: List[str]) -> "SettingsBuilder":
+    def use_password_command(self, cmd: list[str]) -> "SettingsBuilder":
         self._password_loader = cmd
         return self
 
@@ -73,7 +74,7 @@ class SettingsBuilder:
             password_loader = password_plugin.get_password
         else:
             password_loader = password.command_loader(
-                cast(List[str], self._password_loader)
+                cast(list[str], self._password_loader)
             )
 
         plugins = {n: plugin.load_plugin(n) for n in self._plugins}

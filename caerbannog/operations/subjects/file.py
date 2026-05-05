@@ -2,7 +2,8 @@ import difflib
 import os
 import pathlib
 import shutil
-from typing import Any, Dict, List, Optional, Self, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Self
 
 from caerbannog import context, template
 from caerbannog.logging import fmt
@@ -46,7 +47,7 @@ class _FsEntry(Subject):
         self.add_assertion(IsAbsent(self._path))
         return self
 
-    def has_owner(self, user: Optional[str] = None, group: Optional[str] = None):
+    def has_owner(self, user: str | None = None, group: str | None = None):
         self.add_assertion(HasOwner(self._path, user, group))
         return self
 
@@ -78,7 +79,7 @@ class File(_FsEntry):
         self,
         path: str,
         create_parents=False,
-        extra_vars: Optional[Dict[str, Any]] = None,
+        extra_vars: dict[str, Any] | None = None,
     ):
         content = template.render(path, extra_vars=extra_vars)
         return self.has_content(content, create_parents=create_parents)
@@ -98,7 +99,7 @@ class File(_FsEntry):
     def has_lines(
         self,
         *lines: str,
-        end: Optional[str] = None,
+        end: str | None = None,
         final_newline=True,
         create_parents=False,
     ):
@@ -111,7 +112,7 @@ class File(_FsEntry):
 
         return self.has_content(joined, create_parents=create_parents)
 
-    def has_content(self, content: Union[str, bytes], create_parents=False):
+    def has_content(self, content: str | bytes, create_parents=False):
         if not self.has_assertion(IsFile):
             self._is_file(create_parents=create_parents)
         if isinstance(content, str):
@@ -283,7 +284,7 @@ class IsAbsent(Assertion):
 
 
 class HasOwner(Assertion):
-    def __init__(self, path: str, user: Optional[str], group: Optional[str]) -> None:
+    def __init__(self, path: str, user: str | None, group: str | None) -> None:
         user_descr = f"user={user}" if user else ""
         group_descr = f"group={group}" if group else ""
 
@@ -521,7 +522,7 @@ class ContentChanged(Change):
 
         headers = ["---", "+++"]
 
-        def format_diff(unformatted: List[str]):
+        def format_diff(unformatted: list[str]):
             formatted = []
             for line in unformatted:
                 stripped = line.strip()
@@ -552,7 +553,7 @@ class ContentChanged(Change):
                 )
             )
 
-        lines: Sequence[Tuple[DiffType, str]] = []
+        lines: Sequence[tuple[DiffType, str]] = []
         if len(diff) > MAX_DIFF_SIZE:
             added = count_by_type("+")
             removed = count_by_type("-")

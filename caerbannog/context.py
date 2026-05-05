@@ -3,7 +3,7 @@ import json
 import os
 import platform
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Dict, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, TypeVar
 
 if TYPE_CHECKING:
     # The context and settings modules form a circular dependency. The settings module
@@ -19,7 +19,7 @@ from caerbannog import var_loader
 from caerbannog.elevation_type import ElevationType
 from caerbannog.roles.role_context import RoleContext
 
-_context: Dict[str, Any] = {
+_context: dict[str, Any] = {
     "root": os.getcwd(),
     "current_role": None,
     "role_vars": {},
@@ -37,7 +37,7 @@ def _load_vars():
 
 
 def _load_host():
-    user: Dict[str, Any] = {}
+    user: dict[str, Any] = {}
     if platform.system() == "Linux":
         user["username"] = pwd.getpwuid(os.getuid()).pw_name
         user["groupname"] = grp.getgrgid(os.getgid()).gr_name
@@ -123,7 +123,7 @@ def vars():
 T = TypeVar("T")
 
 
-def get_var(name: str, default: Optional[T] = None) -> Union[Any, T]:
+def get_var(name: str, default: T | None = None) -> Any | T:
     """
     Retrieves a variable using a dot-separated path. Returns `None` if the
     variable (or any part of its path) is not defined. Use the `default`

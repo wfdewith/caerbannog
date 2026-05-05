@@ -1,10 +1,8 @@
-from typing import List
-
 from caerbannog import context
 from caerbannog.elevation_type import ElevationType
 
 
-def create_elevated_command(*args: str) -> List[str]:
+def create_elevated_command(*args: str) -> list[str]:
     """
     Create a command with elevated privileges. If the current privilege level is
     sufficient, the command is executed immediately. If not, an elevated command
@@ -26,7 +24,7 @@ def create_elevated_command(*args: str) -> List[str]:
     raise Exception(f"Unknown elevation type: {elevation}")
 
 
-def create_user_command(*args: str) -> List[str]:
+def create_user_command(*args: str) -> list[str]:
     """
     Create a command with reduced privileges. If the current privilege level is
     not elevated, command is executed immediately. Otherwise, the privilege

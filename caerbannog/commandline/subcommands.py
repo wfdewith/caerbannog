@@ -2,7 +2,6 @@ import json
 import subprocess
 import sys
 from argparse import Namespace
-from typing import List
 
 from caerbannog import context, password, secrets, target
 from caerbannog.logging import fmt, logger
@@ -59,7 +58,7 @@ def apply(args: Namespace):
 
 
 def show_target(args: Namespace):
-    def _show_tree(item: str, padding: List[str], last: bool, char="─"):
+    def _show_tree(item: str, padding: list[str], last: bool, char="─"):
         print("".join(padding[:-1]), end="")
         if len(padding) > 0:
             if last:
@@ -68,7 +67,7 @@ def show_target(args: Namespace):
                 print(f"├{char * 3}", end="")
         print(item)
 
-    def _show_target(tgt: target.TargetDescriptor, padding: List[str], last: bool):
+    def _show_target(tgt: target.TargetDescriptor, padding: list[str], last: bool):
         _show_tree(tgt.name(), padding, last)
 
         deps = tgt.dependencies()
