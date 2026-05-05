@@ -92,8 +92,7 @@ def target(name: str):
 
 
 def all() -> Iterator[TargetDescriptor]:
-    for target in _targets.values():
-        yield target
+    yield from _targets.values()
 
 
 def current() -> TargetDescriptor:
