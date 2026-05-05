@@ -186,7 +186,7 @@ class Assertion(ABC):
             change.display(self._log)
 
         while True:
-            answer = input(f"Do you want to apply this change? (y/n): ")
+            answer = input("Do you want to apply this change? (y/n): ")
             answer = answer.strip().lower()
             if answer in ["y", "yes"]:
                 return True

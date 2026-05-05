@@ -415,7 +415,7 @@ class ModeChanged(Change):
         self._mode = new
 
         super().__init__(
-            f"mode changed", [DiffLine.remove(f"{old:03o}"), DiffLine.add(f"{new:03o}")]
+            "mode changed", [DiffLine.remove(f"{old:03o}"), DiffLine.add(f"{new:03o}")]
         )
 
     def execute(self):

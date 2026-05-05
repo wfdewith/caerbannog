@@ -70,7 +70,7 @@ class Installed(Change):
             text=True,
         )
         if install.returncode != 0:
-            raise Exception(f"installation failed", install.stdout.splitlines())
+            raise Exception("installation failed", install.stdout.splitlines())
 
 
 def _powershell(command: str):

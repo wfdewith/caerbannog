@@ -24,7 +24,7 @@ def apply_role(role: str):
                 role_ctx.run_handlers()
 
             except Exception as e:
-                logger.error(f"Failed to apply role", e)
+                logger.error("Failed to apply role", e)
                 return
 
 
