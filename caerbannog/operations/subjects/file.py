@@ -372,7 +372,7 @@ class HasBinaryContent(Assertion):
 
     def apply(self):
         is_different = False
-        existing_content = bytes()
+        existing_content = b""
         try:
             with open(self._path, "rb") as file:
                 existing_content = file.read()
