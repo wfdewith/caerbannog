@@ -3,8 +3,8 @@ def test_no_targets_declared(target):
 
 
 def test_multiple_target_invocations(target):
-    a = target.target("a")
-    a = target.target("a")
+    _ = target.target("a")
+    _ = target.target("a")
 
     assert len(list(target.all())) == 1
 
