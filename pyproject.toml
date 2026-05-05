@@ -21,7 +21,8 @@ ruff = "^0.16.0"
 
 [tool.ruff.lint]
 ignore = [
-    "E741",  # ambiguous-variable-name
+    "E741",   # ambiguous-variable-name
+    "UP015",  # redundant-open-modes
 ]
 
 [build-system]
