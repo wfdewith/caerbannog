@@ -29,7 +29,7 @@ class Ensure:
     """
 
     def __init__(self, *subjects: "Subject") -> None:
-        context.role_context().ensure((list(subjects)))
+        context.role_context().ensure(list(subjects))
 
 
 class Handler:
