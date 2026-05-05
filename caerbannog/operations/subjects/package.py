@@ -76,8 +76,7 @@ class WinGetPackageIsInstalled(Assertion):
     def apply(self):
         query = subprocess.run(
             ["winget", "list", "--disable-interactivity", "--id", self._package_id],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
         )
         if query.returncode == 0:
             return
