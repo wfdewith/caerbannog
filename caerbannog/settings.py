@@ -68,7 +68,7 @@ class SettingsBuilder:
 
     def _build(self) -> Settings:
         password_loader = password.input_loader
-        if type(self._password_loader) == str:
+        if isinstance(self._password_loader, str):
             password_plugin = plugin.load_plugin(cast(str, self._password_loader))
             password_loader = password_plugin.get_password
         else:

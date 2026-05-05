@@ -11,7 +11,7 @@ from caerbannog.operations import filesystem
 
 
 def _join_paths(paths, separator) -> str:
-    if type(paths) == str:
+    if isinstance(paths, str):
         joined = os.path.join(paths)
     else:
         joined = os.path.join(*paths)

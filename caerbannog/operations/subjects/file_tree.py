@@ -93,9 +93,7 @@ class IsReplicatedTo(Assertion):
     T = TypeVar("T")
 
     def get_subjects(self, t: Type[T] = Subject) -> List[T]:
-        return cast(
-            List[t], list(filter(lambda a: issubclass(type(a), t), self._subjects))
-        )
+        return cast(List[t], list(filter(lambda a: isinstance(a, t), self._subjects)))
 
     def _generate_subjects(self) -> Iterator[_FsEntry]:
         expected_files: List[Path] = []

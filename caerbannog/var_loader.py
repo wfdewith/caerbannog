@@ -86,7 +86,7 @@ def unify(
             unified[key] = base_v
         elif in_overlay and not in_base:
             unified[key] = overlay_v
-        elif type(base_v) == dict and type(overlay_v) == dict:
+        elif isinstance(base_v, dict) and isinstance(overlay_v, dict):
             unified[key] = unify(cast(Any, base_v), cast(Any, overlay_v), strategy)
         else:
             unified[key] = overlay_v

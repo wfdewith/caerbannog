@@ -20,11 +20,7 @@ def error(msg, exception: Optional[Exception] = None):
     if exception is None:
         return
 
-    exception_type = type(exception)
-
-    if exception_type == CaerbannogError:
-        exception = cast(CaerbannogError, exception)
-
+    if isinstance(exception, CaerbannogError):
         print(f"    {exception}", file=sys.stderr)
         context = exception.context()
         if context is not None:

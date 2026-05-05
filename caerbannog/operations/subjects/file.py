@@ -114,9 +114,9 @@ class File(_FsEntry):
     def has_content(self, content: Union[str, bytes], create_parents=False):
         if not self.has_assertion(IsFile):
             self._is_file(create_parents=create_parents)
-        if type(content) is str:
+        if isinstance(content, str):
             self.add_assertion(HasContent(self._path, content))
-        elif type(content) is bytes:
+        elif isinstance(content, bytes):
             self.add_assertion(HasBinaryContent(self._path, content))
         return self
 

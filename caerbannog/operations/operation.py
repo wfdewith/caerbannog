@@ -112,24 +112,26 @@ class Subject(ABC):
         self._assertions.append(assertion)
 
     def has_assertion(self, t: Type):
-        return any(filter(lambda a: type(a) == t, self._assertions))
+        return any(filter(lambda a: isinstance(a, t), self._assertions))
 
     T = TypeVar("T")
 
     def get_assertion(self, t: Type[T]) -> Optional[T]:
-        matching_assertions = list(filter(lambda a: type(a) == t, self._assertions))
+        matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
         return cast(t, matching_assertions[0])
 
     def get_last_assertion(self, t: Type[T]) -> Optional[T]:
-        matching_assertions = list(filter(lambda a: type(a) == t, self._assertions))
+        matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
         return cast(t, matching_assertions[-1])
 
     def remove_assertions(self, t: Type):
-        self._assertions = list(filter(lambda a: type(a) != t, self._assertions))
+        self._assertions = list(
+            filter(lambda a: not isinstance(a, t), self._assertions)
+        )
 
     def add_subject_before(self, subject: "Subject"):
         self._subjects_before.append(subject)
@@ -236,7 +238,7 @@ class Change:
     ) -> None:
         self._name = name
         self._details: Any = [
-            (DiffType.NEUTRAL, detail) if type(detail) is str else detail
+            (DiffType.NEUTRAL, detail) if isinstance(detail, str) else detail
             for detail in details
         ]
 
