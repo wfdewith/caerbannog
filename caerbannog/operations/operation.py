@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import (
     Any,
-    Callable,
     Iterable,
     List,
     Optional,
@@ -16,7 +15,7 @@ from typing import (
 )
 
 from caerbannog import context
-from caerbannog.logging import *
+from caerbannog.logging import LogContext
 
 
 class Do:

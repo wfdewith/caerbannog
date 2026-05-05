@@ -1,7 +1,7 @@
 from typing import List
 
 from caerbannog import context
-from caerbannog.logging import *
+from caerbannog.logging import LogContext
 from caerbannog.operations import Handler, Subject
 
 

@@ -1,7 +1,7 @@
 import sys
 from contextlib import contextmanager
 
-from .fmt import *
+from .ansi import BG_RED, BG_RESET, FG_CYAN, FG_GREEN, FG_RED, FG_RESET, FG_YELLOW
 
 
 class LogContext:

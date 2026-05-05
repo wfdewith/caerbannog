@@ -1,9 +1,9 @@
 import subprocess
-from typing import Dict, Set
+from typing import Dict, Set, Tuple, Union
 
-from caerbannog import command, context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog import command
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
 
 class Package(Subject):

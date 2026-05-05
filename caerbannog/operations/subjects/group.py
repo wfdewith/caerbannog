@@ -1,8 +1,8 @@
 import subprocess
 
-from caerbannog import command, context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog import command
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
 if host.is_linux():
     import grp

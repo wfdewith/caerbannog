@@ -2,8 +2,7 @@ from importlib import import_module
 from typing import Dict, Iterator, List, Optional
 
 from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import Do
+from caerbannog.logging import LogContext, fmt, logger
 
 
 def apply_role(role: str):

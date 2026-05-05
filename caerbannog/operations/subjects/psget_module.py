@@ -1,9 +1,8 @@
 import subprocess
-from typing import Set
+from typing import Set, Union
 
-from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, DiffLine, Subject
 
 
 class PsGetModule(Subject):

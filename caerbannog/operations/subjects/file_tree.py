@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
-from typing import Iterator, List, Self, Tuple, cast
+from typing import Iterator, List, Optional, Self, Tuple, Type, TypeVar, cast
 
 from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Subject
 
 from . import Directory, File
 from .file import IsDirectory, IsFile, _FsEntry

@@ -1,6 +1,3 @@
-from tests.fixtures import *
-
-
 def test_no_targets_declared(target):
     assert len(list(target.all())) == 0
 

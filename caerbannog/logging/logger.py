@@ -4,7 +4,7 @@ from typing import Optional, cast
 
 from caerbannog.error import CaerbannogError
 
-from .fmt import *
+from .ansi import BG_RED, BG_RESET, FG_GREEN, FG_RESET, FG_YELLOW
 
 
 def info(msg):

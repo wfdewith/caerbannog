@@ -3,8 +3,8 @@ from typing import Any
 from fontTools import ttLib
 
 from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, Subject
 
 
 class Font(Subject):

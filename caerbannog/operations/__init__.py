@@ -1,2 +1,10 @@
-from . import host
-from .operation import *
+from . import host as host
+from .operation import Assertion as Assertion
+from .operation import AssertionEvaluationFailure as AssertionEvaluationFailure
+from .operation import Change as Change
+from .operation import DiffLine as DiffLine
+from .operation import DiffType as DiffType
+from .operation import Do as Do
+from .operation import Ensure as Ensure
+from .operation import Handler as Handler
+from .operation import Subject as Subject

@@ -2,10 +2,19 @@ import difflib
 import os
 import pathlib
 import shutil
-from typing import Dict, Sequence, Union
+from typing import Any, Dict, List, Optional, Self, Sequence, Tuple, Union
 
 from caerbannog import context, template
-from caerbannog.operations import *
+from caerbannog.logging import fmt
+from caerbannog.operations import (
+    Assertion,
+    AssertionEvaluationFailure,
+    Change,
+    DiffLine,
+    DiffType,
+    Subject,
+    host,
+)
 
 MAX_DIFF_SIZE = 250
 
