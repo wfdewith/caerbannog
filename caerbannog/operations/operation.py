@@ -166,7 +166,7 @@ class Assertion(ABC):
     _log: LogContext = LogContext()
 
     def __init__(self, name: str) -> None:
-        self._changes: list["Change"] = []
+        self._changes: list[Change] = []
         self._assertion_name = name
 
     def register_change(self, change: "Change"):

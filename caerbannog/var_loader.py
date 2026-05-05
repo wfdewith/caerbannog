@@ -97,7 +97,7 @@ def unify(
 def _get_targets_depth_first(
     target: "target.TargetDescriptor",
 ) -> list["target.TargetDescriptor"]:
-    known_targets: dict["target.TargetDescriptor", int] = dict()
+    known_targets: dict[target.TargetDescriptor, int] = dict()
 
     def add(target: "target.TargetDescriptor", depth):
         existing_depth = known_targets.get(target)
