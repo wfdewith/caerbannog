@@ -104,7 +104,7 @@ def current() -> TargetDescriptor:
 
 
 def is_targeted(tgt: str) -> bool:
-    if not tgt in _targets:
+    if tgt not in _targets:
         raise Exception(f"target '{tgt}' does not exist")
 
     return current().includes(tgt)
