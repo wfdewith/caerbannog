@@ -23,7 +23,7 @@ def home_dir(*subpath: str):
 
 def xdg_config_home(*subpath: str):
     dir = context.env().get("XDG_CONFIG_HOME", None)
-    if dir == None:
+    if dir is None:
         dir = home_dir(".config")
 
     return append_subpath(dir, *subpath)
@@ -31,7 +31,7 @@ def xdg_config_home(*subpath: str):
 
 def xdg_data_home(*subpath: str):
     dir = context.env().get("XDG_DATA_HOME", None)
-    if dir == None:
+    if dir is None:
         dir = home_dir(".local/share")
 
     return append_subpath(dir, *subpath)
@@ -39,7 +39,7 @@ def xdg_data_home(*subpath: str):
 
 def xdg_cache_home(*subpath: str):
     dir = context.env().get("XDG_CACHE_HOME", None)
-    if dir == None:
+    if dir is None:
         dir = home_dir(".cache")
 
     return append_subpath(dir, *subpath)
