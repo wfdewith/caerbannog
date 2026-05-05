@@ -72,6 +72,9 @@ class Handler:
                     log.no_change(listen.get_description())
 
 
+T = TypeVar("T")
+
+
 class Subject(ABC):
     def __init__(self) -> None:
         super().__init__()
@@ -108,19 +111,17 @@ class Subject(ABC):
     def has_assertion(self, t: type):
         return any(filter(lambda a: isinstance(a, t), self._assertions))
 
-    T = TypeVar("T")
-
     def get_assertion(self, t: type[T]) -> T | None:
         matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
-        return cast(t, matching_assertions[0])
+        return cast(T, matching_assertions[0])
 
     def get_last_assertion(self, t: type[T]) -> T | None:
         matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
-        return cast(t, matching_assertions[-1])
+        return cast(T, matching_assertions[-1])
 
     def remove_assertions(self, t: type):
         self._assertions = list(

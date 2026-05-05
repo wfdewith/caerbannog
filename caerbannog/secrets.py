@@ -95,7 +95,7 @@ def _encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
     aes = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = aes.encrypt_and_digest(plaintext)
 
-    return aes.nonce, tag, ciphertext
+    return bytes(aes.nonce), tag, ciphertext
 
 
 def _decrypt(key: bytes, nonce: bytes, tag: bytes, ciphertext: bytes) -> bytes:

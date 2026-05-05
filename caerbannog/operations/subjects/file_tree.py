@@ -68,6 +68,9 @@ class FileTree(Subject):
         return f"file tree {fmt.code(self._source)}"
 
 
+T = TypeVar("T")
+
+
 class IsReplicatedTo(Assertion):
     def __init__(
         self,
@@ -88,10 +91,8 @@ class IsReplicatedTo(Assertion):
         self._children_only = children_only
         self._subjects: list[Subject] = list(self._generate_subjects())
 
-    T = TypeVar("T")
-
     def get_subjects(self, t: type[T] = Subject) -> list[T]:
-        return cast(list[t], list(filter(lambda a: isinstance(a, t), self._subjects)))
+        return cast(list[T], list(filter(lambda a: isinstance(a, t), self._subjects)))
 
     def _generate_subjects(self) -> Iterator[_FsEntry]:
         expected_files: list[Path] = []

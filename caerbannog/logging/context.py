@@ -65,7 +65,7 @@ class ChangesAreErrors(LogContext):
     def change(self, msg):
         print(f"[{FG_RED}≈{FG_RESET}] {self._indent()}{msg}", file=sys.stderr)
 
-    def assertion_fail(self, msg):
+    def assertion_fail(self, msg, assertion_failure):
         print(f"{self._indent()}  {FG_RED}×{FG_RESET} {msg}", file=sys.stderr)
 
     def assertion_change(self, msg):
