@@ -1,4 +1,4 @@
-import caerbannog.context as context
+from caerbannog import context
 from caerbannog.context import get_var
 from caerbannog.operations import Do, Ensure, Handler, host
 from caerbannog.operations.filesystem import (
