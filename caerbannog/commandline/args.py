@@ -1,3 +1,4 @@
+import sys
 from argparse import ArgumentParser
 
 import argcomplete
@@ -113,6 +114,6 @@ def parse(dot_target: str | None):
 
     if "func" not in args:
         parser.print_help()
-        exit(1)
+        sys.exit(1)
 
     args.func(args)

@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Callable
 from types import ModuleType
 from typing import Any, cast
@@ -15,7 +16,7 @@ def commit():
     try:
         args.parse(target)
     except KeyboardInterrupt:
-        exit(1)
+        sys.exit(1)
 
 
 def _load_target() -> str | None:

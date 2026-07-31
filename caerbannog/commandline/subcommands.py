@@ -32,7 +32,7 @@ def apply(args: Namespace):
     else:
         if args.show_context:
             print(json.dumps(context.context(), indent=2))
-            exit(0)
+            sys.exit(0)
 
         role_limit = None if args.role is None else args.role.split(",")
         skip_roles = [] if args.skip_role is None else args.skip_role.split(",")
