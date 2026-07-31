@@ -47,9 +47,9 @@ class Settings:
 
 class SettingsBuilder:
     def __init__(self) -> None:
-        self._jinja_globals = dict()
+        self._jinja_globals = {}
         self._password_loader = None
-        self._jinja_globals = dict()
+        self._jinja_globals = {}
         self._plugins = set()
 
     def use_password_plugin(self, name: str) -> "SettingsBuilder":
