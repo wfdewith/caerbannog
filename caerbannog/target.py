@@ -57,7 +57,7 @@ class TargetDescriptor:
 
     def includes(self, name: str) -> bool:
         return self._name == name or any(
-            [_targets[t].includes(name) for t in self._requires]
+            _targets[t].includes(name) for t in self._requires
         )
 
     def execute(
