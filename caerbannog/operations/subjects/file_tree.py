@@ -58,9 +58,7 @@ class FileTree(Subject):
             return self
 
         for subject in assertion.get_subjects(_FsEntry):
-            if subject.get_assertion(IsDirectory):
-                subject.has_owner(user=user, group=group)
-            elif subject.get_assertion(IsFile):
+            if subject.get_assertion(IsDirectory) or subject.get_assertion(IsFile):
                 subject.has_owner(user=user, group=group)
 
         return self
