@@ -285,10 +285,13 @@ class IsAbsent(Assertion):
 
 class HasOwner(Assertion):
     def __init__(self, path: str, user: str | None, group: str | None) -> None:
-        user_descr = f"user={user}" if user else ""
-        group_descr = f"group={group}" if group else ""
+        descrs = []
+        if user:
+            descrs.append(f"user={user}")
+        if group:
+            descrs.append(f"group={group}")
 
-        ownership = " ".join([user_descr, group_descr])
+        ownership = " ".join(descrs)
 
         super().__init__(f"has owner: {ownership}")
 
