@@ -6,6 +6,7 @@ from typing import Any, cast
 import yaml
 
 from caerbannog import password, secrets, target
+from caerbannog.error import CaerbannogError
 
 
 def load_all():
@@ -68,7 +69,7 @@ def unify(
 
     strategy = given_strategy or strategy
     if strategy == MergeStrategy.ERROR:
-        raise Exception("Refusing to merge conflicting dictionaries.")
+        raise CaerbannogError("Refusing to merge conflicting dictionaries.")
     elif strategy == MergeStrategy.REPLACE:
         for k, v in overlay.items():
             if k == CONFLICT_HINT:

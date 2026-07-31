@@ -1,6 +1,7 @@
 import subprocess
 
 from caerbannog.logging import fmt
+from caerbannog.error import CaerbannogError
 from caerbannog.operations import Assertion, Change, DiffLine, Subject
 
 
@@ -70,7 +71,7 @@ class Installed(Change):
             check=True,
         )
         if install.returncode != 0:
-            raise Exception("installation failed", install.stdout.splitlines())
+            raise CaerbannogError(f"installation failed: {install.stdout}")
 
 
 def _powershell(command: str):

@@ -1,6 +1,7 @@
 import subprocess
 
 from caerbannog import command
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
@@ -52,4 +53,4 @@ class Created(Change):
             check=True,
         )
         if groupadd.returncode != 0:
-            raise Exception("adding group failed", groupadd.stdout)
+            raise CaerbannogError(f"adding group failed: {groupadd.stdout}")

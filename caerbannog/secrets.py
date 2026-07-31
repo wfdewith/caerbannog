@@ -6,6 +6,8 @@ from Cryptodome import Random
 from Cryptodome.Cipher import AES
 from Cryptodome.Protocol import KDF
 
+from caerbannog.error import CaerbannogError
+
 SCRYPT_SALT_SIZE = 32
 
 AES_KEY_SIZE = 32
@@ -50,13 +52,13 @@ def decrypt(secret: str, password: str) -> bytes:
     trimmed_secret = re.sub(r"\s", "", secret)
     sections = trimmed_secret.split("$")
     if len(sections) != 7:
-        raise Exception("Unknown secret format")
+        raise CaerbannogError("Unknown secret format")
 
     [_, header, version, salt, nonce, tag, ciphertext] = sections
     if header != HEADER:
-        raise Exception("Unknown secret format")
+        raise CaerbannogError("Unknown secret format")
     if version != VERSION:
-        raise Exception(f"Unknown secret format version: '{version}'")
+        raise CaerbannogError(f"Unknown secret format version: '{version}'")
 
     nonce = _decode(nonce)
     tag = _decode(tag)

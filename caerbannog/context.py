@@ -17,6 +17,7 @@ if platform.system() == "Linux":
 
 from caerbannog import var_loader
 from caerbannog.elevation_type import ElevationType
+from caerbannog.error import CaerbannogError
 from caerbannog.roles.role_context import RoleContext
 
 _context: dict[str, Any] = {
@@ -75,7 +76,7 @@ def init(args: argparse.Namespace):
 
         if platform.system() == "Windows":
             if try_read("elevate"):
-                raise Exception("Elevation is not supported on Windows")
+                raise CaerbannogError("Elevation is not supported on Windows")
             else:
                 _context["elevation"] = str(ElevationType.NONE)
         else:
@@ -191,13 +192,13 @@ def system():
 
 def settings() -> "Settings":
     if _settings is None:
-        raise Exception("Settings are not available yet")
+        raise CaerbannogError("Settings are not available yet")
     return _settings
 
 
 def role_context() -> "RoleContext":
     if _role_context is None:
-        raise Exception("No role is currently executing")
+        raise CaerbannogError("No role is currently executing")
 
     return _role_context
 

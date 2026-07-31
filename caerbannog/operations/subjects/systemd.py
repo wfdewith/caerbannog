@@ -4,6 +4,7 @@ from enum import StrEnum, auto
 from typing import Any
 
 from caerbannog import command, context
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import (
     Assertion,
@@ -126,7 +127,7 @@ class SystemdService(Subject):
             check=True,
         )
         if exists.returncode == 4:
-            raise Exception(
+            raise CaerbannogError(
                 f"Systemd unit '{self._name}' does not exist in {self._scope} scope"
             )
 
@@ -160,7 +161,7 @@ class IsStarted(Assertion):
         elif active_state == "inactive":
             self.register_change(Started(self._service))
         else:
-            raise Exception(
+            raise CaerbannogError(
                 f"Unknown state for service '{self._service._name}': ActiveState={active_state}"
             )
 
@@ -177,7 +178,7 @@ class IsEnabled(Assertion):
         elif unit_file_state == "disabled":
             self.register_change(Enabled(self._service))
         else:
-            raise Exception(
+            raise CaerbannogError(
                 f"Unknown state for service '{self._service._name}': UnitFileState={unit_file_state}"
             )
 

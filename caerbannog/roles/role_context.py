@@ -1,4 +1,5 @@
 from caerbannog import context
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import LogContext
 from caerbannog.operations import Handler, Subject
 
@@ -20,7 +21,7 @@ class RoleContext:
                 for subject in subjects:
                     subject.apply(assert_log)
                     if subject.changed():
-                        raise Exception("assertion failed")
+                        raise CaerbannogError("assertion failed")
 
     def add_handler(self, handler: Handler):
         self._handlers.append(handler)

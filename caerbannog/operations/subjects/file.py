@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from typing import Any, Self
 
 from caerbannog import context, template
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import (
     Assertion,
@@ -144,7 +145,7 @@ class Symlink(_FsEntry):
         return self
 
     def has_mode(self, mode: int):
-        raise Exception("Cannot set mode on symlink")
+        raise CaerbannogError("Cannot set mode on symlink")
 
 
 class IsDirectory(Assertion):
@@ -179,7 +180,7 @@ class IsDirectory(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
         self.register_change(DirectoryCreated(self._path))
 
@@ -225,7 +226,7 @@ class IsFile(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
         self.register_change(FileCreated(self._path))
 
@@ -262,7 +263,7 @@ class IsSymlink(Assertion):
         elif os.path.isfile(self._path):
             self.register_change(FileRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
         else:
             self.register_change(SymlinkCreated(self._path, self._target))
 
@@ -280,7 +281,7 @@ class IsAbsent(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
 
 class HasOwner(Assertion):

@@ -2,6 +2,7 @@ from collections.abc import Container, Iterator
 from importlib import import_module
 
 from caerbannog import context
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import LogContext, fmt, logger
 
 
@@ -98,14 +99,14 @@ def all() -> Iterator[TargetDescriptor]:
 
 def current() -> TargetDescriptor:
     if _current is None:
-        raise Exception("No target active yet")
+        raise CaerbannogError("No target active yet")
 
     return _current
 
 
 def is_targeted(tgt: str) -> bool:
     if tgt not in _targets:
-        raise Exception(f"target '{tgt}' does not exist")
+        raise CaerbannogError(f"target '{tgt}' does not exist")
 
     return current().includes(tgt)
 

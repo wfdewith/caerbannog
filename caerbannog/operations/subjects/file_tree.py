@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Self, TypeVar, cast
 
 from caerbannog import context
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import Assertion, Subject
 
@@ -97,13 +98,13 @@ class IsReplicatedTo(Assertion):
         expected_dirs: list[Path] = []
 
         if not Path(self._file_tree._resolved_source).exists():
-            raise Exception(
+            raise CaerbannogError(
                 f"Source path '{self._file_tree._resolved_source}' does not exist"
             )
 
         dst_path = Path(self._destination)
         if not dst_path.is_absolute():
-            raise Exception(f"Destination path '{dst_path}' is not absolute")
+            raise CaerbannogError(f"Destination path '{dst_path}' is not absolute")
 
         if not self._children_only:
             expected_dirs.append(dst_path)

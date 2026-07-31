@@ -1,5 +1,6 @@
 from caerbannog import context
 from caerbannog.elevation_type import ElevationType
+from caerbannog.error import CaerbannogError
 
 
 def create_elevated_command(*args: str) -> list[str]:
@@ -12,7 +13,7 @@ def create_elevated_command(*args: str) -> list[str]:
     elevation = context.elevation()
 
     if elevation == ElevationType.NONE:
-        raise Exception(
+        raise CaerbannogError(
             "Cannot create an elevated command, because elevation is not allowed."
         )
     if elevation == ElevationType.ELEVATED:
@@ -21,7 +22,7 @@ def create_elevated_command(*args: str) -> list[str]:
         command = ["sudo", *args]
         return command
 
-    raise Exception(f"Unknown elevation type: {elevation}")
+    raise CaerbannogError(f"Unknown elevation type: {elevation}")
 
 
 def create_user_command(*args: str) -> list[str]:
@@ -39,4 +40,4 @@ def create_user_command(*args: str) -> list[str]:
         command = ["sudo", "--preserve-env", "--user", context.username(), *args]
         return command
 
-    raise Exception(f"Unknown elevation type: {elevation}")
+    raise CaerbannogError(f"Unknown elevation type: {elevation}")

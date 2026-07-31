@@ -1,6 +1,7 @@
 import subprocess
 
 from caerbannog import command
+from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
@@ -151,7 +152,7 @@ class PacmanPackageInstalled(Change):
             check=True,
         )
         if install.returncode != 0:
-            raise Exception("installation failed", install.stdout)
+            raise CaerbannogError(f"installation failed: {install.stdout}")
 
 
 class WinGetPackageInstalled(Change):
@@ -174,4 +175,4 @@ class WinGetPackageInstalled(Change):
             check=True,
         )
         if install.returncode != 0:
-            raise Exception("installation failed", install.stdout.splitlines())
+            raise CaerbannogError(f"installation failed: {install.stdout}")
