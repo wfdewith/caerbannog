@@ -52,7 +52,7 @@ class Handler:
         context.role_context().remove_handler(self)
 
     def apply(self, log: LogContext):
-        any_changed = any(map(lambda a: a.changed(), self._listen))
+        any_changed = any(a.changed() for a in self._listen)
         if any_changed:
             log.change("executing handler for:")
             with log.level():
@@ -93,8 +93,8 @@ class Subject(ABC):
                 assertion._apply(log)
 
     def changed(self) -> bool:
-        return any(map(lambda a: a.changed(), self.assertions())) or any(
-            map(lambda c: c.changed(), self._subjects_before)
+        return any(a.changed() for a in self.assertions()) or any(
+            c.changed() for c in self._subjects_before
         )
 
     def add_assertion(self, assertion: "Assertion"):
