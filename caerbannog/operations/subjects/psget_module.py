@@ -67,6 +67,7 @@ class Installed(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
             raise Exception("installation failed", install.stdout.splitlines())

@@ -49,6 +49,7 @@ class Created(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if groupadd.returncode != 0:
             raise Exception("adding group failed", groupadd.stdout)

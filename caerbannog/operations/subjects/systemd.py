@@ -123,6 +123,7 @@ class SystemdService(Subject):
             self._create_scoped_command("status", self._name),
             env=context.env(),
             capture_output=True,
+            check=True,
         )
         if exists.returncode == 4:
             raise Exception(

@@ -28,7 +28,7 @@ def apply(args: Namespace):
         ]
         command.remove("--elevate")
 
-        subprocess.run(command)
+        subprocess.run(command, check=True)
     else:
         if args.show_context:
             print(json.dumps(context.context(), indent=2))

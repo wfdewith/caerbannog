@@ -77,6 +77,7 @@ class WinGetPackageIsInstalled(Assertion):
         query = subprocess.run(
             ["winget", "list", "--disable-interactivity", "--id", self._package_id],
             capture_output=True,
+            check=True,
         )
         if query.returncode == 0:
             return
@@ -147,6 +148,7 @@ class PacmanPackageInstalled(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
             raise Exception("installation failed", install.stdout)
@@ -169,6 +171,7 @@ class WinGetPackageInstalled(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
             raise Exception("installation failed", install.stdout.splitlines())
