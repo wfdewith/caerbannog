@@ -502,9 +502,9 @@ class ContentChangedSummary(Change):
         self._content = content
 
         if bytes > 0:
-            details = f"+{str(bytes)}"
+            details = f"+{bytes!s}"
         else:
-            details = f"{str(bytes)}"
+            details = f"{bytes!s}"
 
         super().__init__("content changed", [details])
 

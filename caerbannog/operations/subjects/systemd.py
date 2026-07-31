@@ -31,7 +31,7 @@ class ServiceFile(File):
         super().__init__(path)
 
         self._service = service
-        self.annotate(f"{str(service._scope)} service file")
+        self.annotate(f"{service._scope!s} service file")
         self._handler = None
         self._reload = False
         self._restart = False
@@ -193,7 +193,7 @@ class IsRestarted(Assertion):
 
 class IsReloaded(Assertion):
     def __init__(self, scope: Scope) -> None:
-        super().__init__(f"systemd {str(scope)} daemon is reloaded")
+        super().__init__(f"systemd {scope!s} daemon is reloaded")
         self._scope = scope
 
     def apply(self):
