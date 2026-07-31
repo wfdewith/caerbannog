@@ -14,7 +14,7 @@ def apply_role(role: str):
 
         try:
             module = import_module(module_name)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Failed to import role '{role}'", e)
             return
 
@@ -23,7 +23,7 @@ def apply_role(role: str):
                 module.configure()
                 role_ctx.run_handlers()
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error("Failed to apply role", e)
                 return
 

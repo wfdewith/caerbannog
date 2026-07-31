@@ -358,7 +358,7 @@ class HasContent(Assertion):
             is_different = existing_content != self._content
         except FileNotFoundError as err:
             raise AssertionEvaluationFailure(self, "file not found", err)
-        except Exception as err:
+        except OSError as err:
             raise AssertionEvaluationFailure(self, "failed to open file", err)
 
         if is_different:
