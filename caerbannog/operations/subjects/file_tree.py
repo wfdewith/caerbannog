@@ -1,10 +1,12 @@
 import os
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, List, Self, Tuple, cast
+from typing import Self, TypeVar, cast
 
 from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Subject
 
 from . import Directory, File
 from .file import IsDirectory, IsFile, _FsEntry
@@ -51,23 +53,22 @@ class FileTree(Subject):
 
         return self
 
-    def has_owner(
-        self, user: Optional[str] = None, group: Optional[str] = None
-    ) -> Self:
+    def has_owner(self, user: str | None = None, group: str | None = None) -> Self:
         assertion = self.get_last_assertion(IsReplicatedTo)
         if not assertion:
             return self
 
         for subject in assertion.get_subjects(_FsEntry):
-            if subject.get_assertion(IsDirectory):
-                subject.has_owner(user=user, group=group)
-            elif subject.get_assertion(IsFile):
+            if subject.get_assertion(IsDirectory) or subject.get_assertion(IsFile):
                 subject.has_owner(user=user, group=group)
 
         return self
 
     def describe(self) -> str:
         return f"file tree {fmt.code(self._source)}"
+
+
+T = TypeVar("T")
 
 
 class IsReplicatedTo(Assertion):
@@ -88,27 +89,23 @@ class IsReplicatedTo(Assertion):
         self._destination = destination
         self._exclusive = exclusive
         self._children_only = children_only
-        self._subjects: List[Subject] = list(self._generate_subjects())
+        self._subjects: list[Subject] = list(self._generate_subjects())
 
-    T = TypeVar("T")
-
-    def get_subjects(self, t: Type[T] = Subject) -> List[T]:
-        return cast(
-            List[t], list(filter(lambda a: issubclass(type(a), t), self._subjects))
-        )
+    def get_subjects(self, t: type[T] = Subject) -> list[T]:
+        return cast(list[T], list(filter(lambda a: isinstance(a, t), self._subjects)))
 
     def _generate_subjects(self) -> Iterator[_FsEntry]:
-        expected_files: List[Path] = []
-        expected_dirs: List[Path] = []
+        expected_files: list[Path] = []
+        expected_dirs: list[Path] = []
 
         if not Path(self._file_tree._resolved_source).exists():
-            raise Exception(
+            raise CaerbannogError(
                 f"Source path '{self._file_tree._resolved_source}' does not exist"
             )
 
         dst_path = Path(self._destination)
         if not dst_path.is_absolute():
-            raise Exception(f"Destination path '{dst_path}' is not absolute")
+            raise CaerbannogError(f"Destination path '{dst_path}' is not absolute")
 
         if not self._children_only:
             expected_dirs.append(dst_path)
@@ -140,7 +137,7 @@ class IsReplicatedTo(Assertion):
                 if present_file not in expected_files:
                     yield File(str(present_file)).is_absent()
 
-    def _iterate_required_files(self) -> Iterator[Tuple[Path, List[Tuple[Path, Path]]]]:
+    def _iterate_required_files(self) -> Iterator[tuple[Path, list[tuple[Path, Path]]]]:
         role_dir = Path(context.current_role_dir())
         base_dir = Path(self._file_tree._resolved_source).parent
         for abs_src_dir, _, file_names in os.walk(self._file_tree._resolved_source):
@@ -158,7 +155,7 @@ class IsReplicatedTo(Assertion):
 
     def _iterate_present_files(
         self,
-    ) -> Iterator[Tuple[Path, List[Path]]]:
+    ) -> Iterator[tuple[Path, list[Path]]]:
         iterator = os.walk(self._destination)
 
         for present_dir, _, present_filenames in iterator:

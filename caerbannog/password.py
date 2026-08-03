@@ -1,6 +1,6 @@
 import getpass
 import subprocess
-from typing import Callable, List
+from collections.abc import Callable
 
 from caerbannog import command, context
 
@@ -9,7 +9,7 @@ def input_loader() -> str:
     return getpass.getpass("Secrets password: ")
 
 
-def command_loader(cmd: List[str]) -> Callable[[], str]:
+def command_loader(cmd: list[str]) -> Callable[[], str]:
     def _command_loader():
         result = subprocess.run(
             command.create_user_command(*cmd),

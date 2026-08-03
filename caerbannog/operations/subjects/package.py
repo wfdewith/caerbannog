@@ -1,9 +1,9 @@
 import subprocess
-from typing import Dict, Set
 
-from caerbannog import command, context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog import command
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
 
 class Package(Subject):
@@ -77,8 +77,8 @@ class WinGetPackageIsInstalled(Assertion):
     def apply(self):
         query = subprocess.run(
             ["winget", "list", "--disable-interactivity", "--id", self._package_id],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            capture_output=True,
+            check=True,
         )
         if query.returncode == 0:
             return
@@ -87,9 +87,9 @@ class WinGetPackageIsInstalled(Assertion):
 
 
 class PacmanPackageIsInstalled(Assertion):
-    _cache: Union[Tuple[Set[str], Dict[str, Set[str]]], None] = None
+    _cache: tuple[set[str], dict[str, set[str]]] | None = None
 
-    def __init__(self, names: Set[str]) -> None:
+    def __init__(self, names: set[str]) -> None:
         if len(names) > 1:
             descr = "are installed"
         else:
@@ -109,7 +109,7 @@ class PacmanPackageIsInstalled(Assertion):
         self.register_change(PacmanPackageInstalled(missing))
 
     @staticmethod
-    def _load_installed() -> Tuple[Set[str], Dict[str, Set[str]]]:
+    def _load_installed() -> tuple[set[str], dict[str, set[str]]]:
         if PacmanPackageIsInstalled._cache is not None:
             return PacmanPackageIsInstalled._cache
 
@@ -126,7 +126,7 @@ class PacmanPackageIsInstalled(Assertion):
             check=True,
         )
         packages = set(query_packages.stdout.splitlines())
-        groups: Dict[str, Set[str]] = {}
+        groups: dict[str, set[str]] = {}
         for line in query_groups.stdout.splitlines():
             [group, package] = line.split(" ")
             entry = groups.setdefault(group, set())
@@ -137,7 +137,7 @@ class PacmanPackageIsInstalled(Assertion):
 
 
 class PacmanPackageInstalled(Change):
-    def __init__(self, packages: Set[str]):
+    def __init__(self, packages: set[str]):
         self._pachages = packages
         super().__init__("installed", [DiffLine.add(name) for name in packages])
 
@@ -149,9 +149,10 @@ class PacmanPackageInstalled(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
-            raise Exception(f"installation failed", install.stdout)
+            raise CaerbannogError(f"installation failed: {install.stdout}")
 
 
 class WinGetPackageInstalled(Change):
@@ -171,6 +172,7 @@ class WinGetPackageInstalled(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
-            raise Exception(f"installation failed", install.stdout.splitlines())
+            raise CaerbannogError(f"installation failed: {install.stdout}")

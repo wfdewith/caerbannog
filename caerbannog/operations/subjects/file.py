@@ -2,10 +2,21 @@ import difflib
 import os
 import pathlib
 import shutil
-from typing import Dict, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Self
 
 from caerbannog import context, template
-from caerbannog.operations import *
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import fmt
+from caerbannog.operations import (
+    Assertion,
+    AssertionEvaluationFailure,
+    Change,
+    DiffLine,
+    DiffType,
+    Subject,
+    host,
+)
 
 MAX_DIFF_SIZE = 250
 
@@ -37,7 +48,7 @@ class _FsEntry(Subject):
         self.add_assertion(IsAbsent(self._path))
         return self
 
-    def has_owner(self, user: Optional[str] = None, group: Optional[str] = None):
+    def has_owner(self, user: str | None = None, group: str | None = None):
         self.add_assertion(HasOwner(self._path, user, group))
         return self
 
@@ -69,7 +80,7 @@ class File(_FsEntry):
         self,
         path: str,
         create_parents=False,
-        extra_vars: Optional[Dict[str, Any]] = None,
+        extra_vars: dict[str, Any] | None = None,
     ):
         content = template.render(path, extra_vars=extra_vars)
         return self.has_content(content, create_parents=create_parents)
@@ -89,7 +100,7 @@ class File(_FsEntry):
     def has_lines(
         self,
         *lines: str,
-        end: Optional[str] = None,
+        end: str | None = None,
         final_newline=True,
         create_parents=False,
     ):
@@ -102,12 +113,12 @@ class File(_FsEntry):
 
         return self.has_content(joined, create_parents=create_parents)
 
-    def has_content(self, content: Union[str, bytes], create_parents=False):
+    def has_content(self, content: str | bytes, create_parents=False):
         if not self.has_assertion(IsFile):
             self._is_file(create_parents=create_parents)
-        if type(content) is str:
+        if isinstance(content, str):
             self.add_assertion(HasContent(self._path, content))
-        elif type(content) is bytes:
+        elif isinstance(content, bytes):
             self.add_assertion(HasBinaryContent(self._path, content))
         return self
 
@@ -134,7 +145,7 @@ class Symlink(_FsEntry):
         return self
 
     def has_mode(self, mode: int):
-        raise Exception("Cannot set mode on symlink")
+        raise CaerbannogError("Cannot set mode on symlink")
 
 
 class IsDirectory(Assertion):
@@ -169,7 +180,7 @@ class IsDirectory(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
         self.register_change(DirectoryCreated(self._path))
 
@@ -215,7 +226,7 @@ class IsFile(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
         self.register_change(FileCreated(self._path))
 
@@ -252,7 +263,7 @@ class IsSymlink(Assertion):
         elif os.path.isfile(self._path):
             self.register_change(FileRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
         else:
             self.register_change(SymlinkCreated(self._path, self._target))
 
@@ -270,15 +281,18 @@ class IsAbsent(Assertion):
         elif os.path.islink(self._path):
             self.register_change(SymlinkRemoved(self._path))
         elif os.path.exists(self._path):
-            raise Exception(f"'{self._path}' is not a file, directory or symlink")
+            raise CaerbannogError(f"'{self._path}' is not a file, directory or symlink")
 
 
 class HasOwner(Assertion):
-    def __init__(self, path: str, user: Optional[str], group: Optional[str]) -> None:
-        user_descr = f"user={user}" if user else ""
-        group_descr = f"group={group}" if group else ""
+    def __init__(self, path: str, user: str | None, group: str | None) -> None:
+        descrs = []
+        if user:
+            descrs.append(f"user={user}")
+        if group:
+            descrs.append(f"group={group}")
 
-        ownership = " ".join([user_descr, group_descr])
+        ownership = " ".join(descrs)
 
         super().__init__(f"has owner: {ownership}")
 
@@ -345,7 +359,7 @@ class HasContent(Assertion):
             is_different = existing_content != self._content
         except FileNotFoundError as err:
             raise AssertionEvaluationFailure(self, "file not found", err)
-        except Exception as err:
+        except OSError as err:
             raise AssertionEvaluationFailure(self, "failed to open file", err)
 
         if is_different:
@@ -362,7 +376,7 @@ class HasBinaryContent(Assertion):
 
     def apply(self):
         is_different = False
-        existing_content = bytes()
+        existing_content = b""
         try:
             with open(self._path, "rb") as file:
                 existing_content = file.read()
@@ -406,7 +420,7 @@ class ModeChanged(Change):
         self._mode = new
 
         super().__init__(
-            f"mode changed", [DiffLine.remove(f"{old:03o}"), DiffLine.add(f"{new:03o}")]
+            "mode changed", [DiffLine.remove(f"{old:03o}"), DiffLine.add(f"{new:03o}")]
         )
 
     def execute(self):
@@ -489,9 +503,9 @@ class ContentChangedSummary(Change):
         self._content = content
 
         if bytes > 0:
-            details = f"+{str(bytes)}"
+            details = f"+{bytes!s}"
         else:
-            details = f"{str(bytes)}"
+            details = f"{bytes!s}"
 
         super().__init__("content changed", [details])
 
@@ -512,7 +526,7 @@ class ContentChanged(Change):
 
         headers = ["---", "+++"]
 
-        def format_diff(unformatted: List[str]):
+        def format_diff(unformatted: list[str]):
             formatted = []
             for line in unformatted:
                 stripped = line.strip()
@@ -543,7 +557,7 @@ class ContentChanged(Change):
                 )
             )
 
-        lines: Sequence[Tuple[DiffType, str]] = []
+        lines: Sequence[tuple[DiffType, str]] = []
         if len(diff) > MAX_DIFF_SIZE:
             added = count_by_type("+")
             removed = count_by_type("-")

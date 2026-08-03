@@ -1,4 +1,4 @@
-from .ansi import *
+from .ansi import FG_BLUE, FG_BRIGHT_BLACK, FG_CYAN_BOLD, FG_RESET, RESET
 
 
 def target(content: str) -> str:

@@ -1,7 +1,10 @@
-from .file import Directory, File, Symlink
-from .file_tree import FileTree
-from .font import Font
-from .group import Group
-from .package import Package
-from .psget_module import PsGetModule
-from .systemd import Scope, SystemdService
+from .file import Directory as Directory
+from .file import File as File
+from .file import Symlink as Symlink
+from .file_tree import FileTree as FileTree
+from .font import Font as Font
+from .group import Group as Group
+from .package import Package as Package
+from .psget_module import PsGetModule as PsGetModule
+from .systemd import Scope as Scope
+from .systemd import SystemdService as SystemdService

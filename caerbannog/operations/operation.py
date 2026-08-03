@@ -1,22 +1,15 @@
 from abc import ABC, abstractmethod
+from collections.abc import Iterable, Sequence
 from enum import Enum
 from typing import (
     Any,
-    Callable,
-    Iterable,
-    List,
-    Optional,
     Self,
-    Sequence,
-    Tuple,
-    Type,
     TypeVar,
-    Union,
     cast,
 )
 
 from caerbannog import context
-from caerbannog.logging import *
+from caerbannog.logging import LogContext
 
 
 class Do:
@@ -36,12 +29,12 @@ class Ensure:
     """
 
     def __init__(self, *subjects: "Subject") -> None:
-        context.role_context().ensure((list(subjects)))
+        context.role_context().ensure(list(subjects))
 
 
 class Handler:
     def __init__(self, *subjects: "Subject") -> None:
-        self._listen: List[Subject] = []
+        self._listen: list[Subject] = []
         self._call = list(subjects)
         self._generated = False
         context.role_context().add_handler(self)
@@ -59,7 +52,7 @@ class Handler:
         context.role_context().remove_handler(self)
 
     def apply(self, log: LogContext):
-        any_changed = any(map(lambda a: a.changed(), self._listen))
+        any_changed = any(a.changed() for a in self._listen)
         if any_changed:
             log.change("executing handler for:")
             with log.level():
@@ -79,11 +72,14 @@ class Handler:
                     log.no_change(listen.get_description())
 
 
+T = TypeVar("T")
+
+
 class Subject(ABC):
     def __init__(self) -> None:
         super().__init__()
-        self._assertions: List[Assertion] = []
-        self._subjects_before: List[Subject] = []
+        self._assertions: list[Assertion] = []
+        self._subjects_before: list[Subject] = []
         self._description = None
 
     def apply(self, log: LogContext):
@@ -100,8 +96,8 @@ class Subject(ABC):
                 assertion._apply(log)
 
     def changed(self) -> bool:
-        return any(map(lambda a: a.changed(), self.assertions())) or any(
-            map(lambda c: c.changed(), self._subjects_before)
+        return any(a.changed() for a in self.assertions()) or any(
+            c.changed() for c in self._subjects_before
         )
 
     def add_assertion(self, assertion: "Assertion"):
@@ -112,25 +108,25 @@ class Subject(ABC):
         self.remove_assertions(type(assertion))
         self._assertions.append(assertion)
 
-    def has_assertion(self, t: Type):
-        return any(filter(lambda a: type(a) == t, self._assertions))
+    def has_assertion(self, t: type):
+        return any(filter(lambda a: isinstance(a, t), self._assertions))
 
-    T = TypeVar("T")
-
-    def get_assertion(self, t: Type[T]) -> Optional[T]:
-        matching_assertions = list(filter(lambda a: type(a) == t, self._assertions))
+    def get_assertion(self, t: type[T]) -> T | None:
+        matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
-        return cast(t, matching_assertions[0])
+        return cast(T, matching_assertions[0])
 
-    def get_last_assertion(self, t: Type[T]) -> Optional[T]:
-        matching_assertions = list(filter(lambda a: type(a) == t, self._assertions))
+    def get_last_assertion(self, t: type[T]) -> T | None:
+        matching_assertions = list(filter(lambda a: isinstance(a, t), self._assertions))
         if len(matching_assertions) == 0:
             return None
-        return cast(t, matching_assertions[-1])
+        return cast(T, matching_assertions[-1])
 
-    def remove_assertions(self, t: Type):
-        self._assertions = list(filter(lambda a: type(a) != t, self._assertions))
+    def remove_assertions(self, t: type):
+        self._assertions = list(
+            filter(lambda a: not isinstance(a, t), self._assertions)
+        )
 
     def add_subject_before(self, subject: "Subject"):
         self._subjects_before.append(subject)
@@ -171,7 +167,7 @@ class Assertion(ABC):
     _log: LogContext = LogContext()
 
     def __init__(self, name: str) -> None:
-        self._changes: List["Change"] = []
+        self._changes: list[Change] = []
         self._assertion_name = name
 
     def register_change(self, change: "Change"):
@@ -187,7 +183,7 @@ class Assertion(ABC):
             change.display(self._log)
 
         while True:
-            answer = input(f"Do you want to apply this change? (y/n): ")
+            answer = input("Do you want to apply this change? (y/n): ")
             answer = answer.strip().lower()
             if answer in ["y", "yes"]:
                 return True
@@ -224,7 +220,7 @@ class Assertion(ABC):
 
 class AssertionEvaluationFailure(Exception):
     def __init__(
-        self, assertion: Assertion, message: str, inner: Optional[Exception] = None
+        self, assertion: Assertion, message: str, inner: Exception | None = None
     ):
         self.inner = inner
         self.message = message
@@ -233,11 +229,11 @@ class AssertionEvaluationFailure(Exception):
 
 class Change:
     def __init__(
-        self, name: str, details: Sequence[Union[str, Tuple["DiffType", str]]] = []
+        self, name: str, details: Sequence[str | tuple["DiffType", str]] = []
     ) -> None:
         self._name = name
         self._details: Any = [
-            (DiffType.NEUTRAL, detail) if type(detail) is str else detail
+            (DiffType.NEUTRAL, detail) if isinstance(detail, str) else detail
             for detail in details
         ]
 
@@ -267,21 +263,21 @@ class DiffType(Enum):
 
 class DiffLine:
     @staticmethod
-    def neutral(content: str) -> Tuple[DiffType, str]:
+    def neutral(content: str) -> tuple[DiffType, str]:
         return (DiffType.NEUTRAL, f"  {content}")
 
     @staticmethod
-    def add(content: str) -> Tuple[DiffType, str]:
+    def add(content: str) -> tuple[DiffType, str]:
         return (DiffType.ADD, f"+ {content}")
 
     @staticmethod
-    def remove(content: str) -> Tuple[DiffType, str]:
+    def remove(content: str) -> tuple[DiffType, str]:
         return (DiffType.REMOVE, f"- {content}")
 
     @staticmethod
-    def header(content: str) -> Tuple[DiffType, str]:
+    def header(content: str) -> tuple[DiffType, str]:
         return (DiffType.HEADER, content)
 
     @staticmethod
-    def detail(content: str) -> Tuple[DiffType, str]:
+    def detail(content: str) -> tuple[DiffType, str]:
         return (DiffType.NEUTRAL, content)

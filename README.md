@@ -36,6 +36,7 @@ a `.gitconfig` and global `.gitignore` in your home directory:
 ```py
 from caerbannog.roles.prelude import *
 
+
 def configure():
     Do(
         Package("git").is_installed(),

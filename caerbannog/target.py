@@ -1,9 +1,9 @@
+from collections.abc import Container, Iterator
 from importlib import import_module
-from typing import Dict, Iterator, List, Optional
 
 from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import Do
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import LogContext, fmt, logger
 
 
 def apply_role(role: str):
@@ -15,7 +15,7 @@ def apply_role(role: str):
 
         try:
             module = import_module(module_name)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Failed to import role '{role}'", e)
             return
 
@@ -24,20 +24,20 @@ def apply_role(role: str):
                 module.configure()
                 role_ctx.run_handlers()
 
-            except Exception as e:
-                logger.error(f"Failed to apply role", e)
+            except Exception as e:  # noqa: BLE001
+                logger.error("Failed to apply role", e)
                 return
 
 
-_targets: Dict[str, "TargetDescriptor"] = {}
+_targets: dict[str, "TargetDescriptor"] = {}
 _current = None
 
 
 class TargetDescriptor:
     def __init__(self, name) -> None:
         self._name = name
-        self._requires: List[str] = []
-        self._roles: List[str] = []
+        self._requires: list[str] = []
+        self._roles: list[str] = []
 
     def depends_on(self, *names: str) -> "TargetDescriptor":
         self._requires.extend(names)
@@ -47,23 +47,26 @@ class TargetDescriptor:
         self._roles.extend(roles)
         return self
 
-    def roles(self) -> List[str]:
+    def roles(self) -> list[str]:
         return self._roles
 
     def name(self) -> str:
         return self._name
 
-    def dependencies(self) -> List["TargetDescriptor"]:
+    def dependencies(self) -> list["TargetDescriptor"]:
         return [target(name) for name in self._requires]
 
     def includes(self, name: str) -> bool:
         return self._name == name or any(
-            [_targets[t].includes(name) for t in self._requires]
+            _targets[t].includes(name) for t in self._requires
         )
 
     def execute(
-        self, role_limit: Optional[List[str]] = [], skip_roles: List[str] = []
-    ) -> List[str]:
+        self, role_limit: Container[str] | None = None, skip_roles: Container[str] = ()
+    ) -> list[str]:
+        def should_skip(role: str) -> bool:
+            is_limited = role_limit is not None and role not in role_limit
+            return is_limited or role in skip_roles
 
         applied_roles = []
 
@@ -75,9 +78,7 @@ class TargetDescriptor:
 
         logger.info(f"Applying target {fmt.target(self._name)}")
         for role in self._roles:
-            if (
-                role_limit is not None and role not in role_limit
-            ) or role in skip_roles:
+            if should_skip(role):
                 continue
             apply_role(role)
             applied_roles.append(role)
@@ -93,20 +94,19 @@ def target(name: str):
 
 
 def all() -> Iterator[TargetDescriptor]:
-    for target in _targets.values():
-        yield target
+    yield from _targets.values()
 
 
 def current() -> TargetDescriptor:
     if _current is None:
-        raise Exception("No target active yet")
+        raise CaerbannogError("No target active yet")
 
     return _current
 
 
 def is_targeted(tgt: str) -> bool:
-    if not tgt in _targets:
-        raise Exception(f"target '{tgt}' does not exist")
+    if tgt not in _targets:
+        raise CaerbannogError(f"target '{tgt}' does not exist")
 
     return current().includes(tgt)
 

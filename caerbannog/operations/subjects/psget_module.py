@@ -1,9 +1,8 @@
 import subprocess
-from typing import Set
 
-from caerbannog import context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog.logging import fmt
+from caerbannog.error import CaerbannogError
+from caerbannog.operations import Assertion, Change, DiffLine, Subject
 
 
 class PsGetModule(Subject):
@@ -24,7 +23,7 @@ class PsGetModule(Subject):
 
 
 class IsInstalled(Assertion):
-    _cache: Union[Set[str], None] = None
+    _cache: set[str] | None = None
 
     def __init__(self, name: str) -> None:
         descr = "is installed"
@@ -40,7 +39,7 @@ class IsInstalled(Assertion):
         self.register_change(Installed(self._package_name))
 
     @staticmethod
-    def _load_installed() -> Set[str]:
+    def _load_installed() -> set[str]:
         if IsInstalled._cache is not None:
             return IsInstalled._cache
 
@@ -69,9 +68,10 @@ class Installed(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if install.returncode != 0:
-            raise Exception(f"installation failed", install.stdout.splitlines())
+            raise CaerbannogError(f"installation failed: {install.stdout}")
 
 
 def _powershell(command: str):

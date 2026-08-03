@@ -1,20 +1,19 @@
-from typing import List
-
 from caerbannog import context
-from caerbannog.logging import *
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import LogContext
 from caerbannog.operations import Handler, Subject
 
 
 class RoleContext:
     def __init__(self, log: LogContext) -> None:
-        self._handlers: List[Handler] = []
+        self._handlers: list[Handler] = []
         self._log = log
 
-    def do(self, subjects: List[Subject]):
+    def do(self, subjects: list[Subject]):
         for subject in subjects:
             subject.apply(self._log)
 
-    def ensure(self, subjects: List[Subject]):
+    def ensure(self, subjects: list[Subject]):
         with context.dry_run():
             assert_log = self._log.changes_are_errors()
             with assert_log.level():
@@ -22,7 +21,7 @@ class RoleContext:
                 for subject in subjects:
                     subject.apply(assert_log)
                     if subject.changed():
-                        raise Exception("assertion failed")
+                        raise CaerbannogError("assertion failed")
 
     def add_handler(self, handler: Handler):
         self._handlers.append(handler)

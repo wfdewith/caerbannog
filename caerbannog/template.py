@@ -1,7 +1,7 @@
 import inspect
 import os
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, UndefinedError
 
@@ -11,7 +11,7 @@ from caerbannog.operations import filesystem
 
 
 def _join_paths(paths, separator) -> str:
-    if type(paths) == str:
+    if isinstance(paths, str):
         joined = os.path.join(paths)
     else:
         joined = os.path.join(*paths)
@@ -47,7 +47,7 @@ def _create_environment() -> Environment:
     return env
 
 
-def render(*path: str, extra_vars: Optional[Dict[str, Any]] = None):
+def render(*path: str, extra_vars: dict[str, Any] | None = None):
     env = _create_environment()
 
     joined = _join_paths(path, "/")

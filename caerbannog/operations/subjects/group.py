@@ -1,8 +1,9 @@
 import subprocess
 
-from caerbannog import command, context
-from caerbannog.logging import *
-from caerbannog.operations import *
+from caerbannog import command
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import fmt
+from caerbannog.operations import Assertion, Change, DiffLine, Subject, host
 
 if host.is_linux():
     import grp
@@ -49,6 +50,7 @@ class Created(Change):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=True,
         )
         if groupadd.returncode != 0:
-            raise Exception("adding group failed", groupadd.stdout)
+            raise CaerbannogError(f"adding group failed: {groupadd.stdout}")

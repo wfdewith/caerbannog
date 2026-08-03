@@ -1,11 +1,12 @@
 import enum
 import os
 from os import DirEntry
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any, cast
 
 import yaml
 
 from caerbannog import password, secrets, target
+from caerbannog.error import CaerbannogError
 
 
 def load_all():
@@ -19,12 +20,12 @@ def load_all():
     return all_vars
 
 
-def load_vars(directory, key) -> Dict[str, Any]:
+def load_vars(directory, key) -> dict[str, Any]:
     dir_name = os.path.join(directory, key)
     yaml_name = f"{dir_name}.yaml"
     yml_name = f"{dir_name}.yml"
 
-    vars: Dict[str, Any] = {}
+    vars: dict[str, Any] = {}
 
     if os.path.isdir(dir_name):
         vars_files = [file for file in os.scandir(dir_name) if _is_vars_file(file)]
@@ -50,10 +51,10 @@ CONFLICT_HINT = "$conflict"
 
 
 def unify(
-    base: Dict[str, Any],
-    overlay: Dict[str, Any],
+    base: dict[str, Any],
+    overlay: dict[str, Any],
     strategy: MergeStrategy = MergeStrategy.MERGE,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Unify the variables in `base` and `overlay`, recursively merging them
     according to the given `MergeStrategy`. If either variable set contains
@@ -62,13 +63,13 @@ def unify(
     """
     given_strategy = overlay.get(CONFLICT_HINT, base.get(CONFLICT_HINT, None))
 
-    unified: Dict[str, Any] = {}
+    unified: dict[str, Any] = {}
     if given_strategy is not None:
         unified[CONFLICT_HINT] = str(given_strategy)
 
     strategy = given_strategy or strategy
     if strategy == MergeStrategy.ERROR:
-        raise Exception("Refusing to merge conflicting dictionaries.")
+        raise CaerbannogError("Refusing to merge conflicting dictionaries.")
     elif strategy == MergeStrategy.REPLACE:
         for k, v in overlay.items():
             if k == CONFLICT_HINT:
@@ -86,7 +87,7 @@ def unify(
             unified[key] = base_v
         elif in_overlay and not in_base:
             unified[key] = overlay_v
-        elif type(base_v) == dict and type(overlay_v) == dict:
+        elif isinstance(base_v, dict) and isinstance(overlay_v, dict):
             unified[key] = unify(cast(Any, base_v), cast(Any, overlay_v), strategy)
         else:
             unified[key] = overlay_v
@@ -96,8 +97,8 @@ def unify(
 
 def _get_targets_depth_first(
     target: "target.TargetDescriptor",
-) -> List["target.TargetDescriptor"]:
-    known_targets: Dict["target.TargetDescriptor", int] = dict()
+) -> list["target.TargetDescriptor"]:
+    known_targets: dict[target.TargetDescriptor, int] = {}
 
     def add(target: "target.TargetDescriptor", depth):
         existing_depth = known_targets.get(target)
@@ -113,7 +114,7 @@ def _get_targets_depth_first(
 
     recurse(target, 0)
 
-    def sort_depth_first_then_name(pair: Tuple["target.TargetDescriptor", int]):
+    def sort_depth_first_then_name(pair: tuple["target.TargetDescriptor", int]):
         target, depth = pair
         return (-depth, target.name())
 
@@ -127,7 +128,7 @@ def _is_vars_file(entry: DirEntry[str]) -> bool:
     )
 
 
-def _load_var_file(path: str) -> Dict[str, Any]:
+def _load_var_file(path: str) -> dict[str, Any]:
     with open(path, "r", encoding="utf-8") as file:
         content = file.read()
         if content.startswith(secrets.SECRET_MARKER):

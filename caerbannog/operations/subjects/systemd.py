@@ -1,11 +1,18 @@
 import subprocess
+from collections.abc import Callable
 from enum import StrEnum, auto
-from typing import Callable
+from typing import Any
 
-from caerbannog import command
-from caerbannog.logging import *
-from caerbannog.operations import *
-from caerbannog.operations import filesystem
+from caerbannog import command, context
+from caerbannog.error import CaerbannogError
+from caerbannog.logging import fmt
+from caerbannog.operations import (
+    Assertion,
+    Change,
+    Handler,
+    Subject,
+    filesystem,
+)
 
 from . import File
 
@@ -25,7 +32,7 @@ class ServiceFile(File):
         super().__init__(path)
 
         self._service = service
-        self.annotate(f"{str(service._scope)} service file")
+        self.annotate(f"{service._scope!s} service file")
         self._handler = None
         self._reload = False
         self._restart = False
@@ -117,9 +124,10 @@ class SystemdService(Subject):
             self._create_scoped_command("status", self._name),
             env=context.env(),
             capture_output=True,
+            check=True,
         )
         if exists.returncode == 4:
-            raise Exception(
+            raise CaerbannogError(
                 f"Systemd unit '{self._name}' does not exist in {self._scope} scope"
             )
 
@@ -153,7 +161,7 @@ class IsStarted(Assertion):
         elif active_state == "inactive":
             self.register_change(Started(self._service))
         else:
-            raise Exception(
+            raise CaerbannogError(
                 f"Unknown state for service '{self._service._name}': ActiveState={active_state}"
             )
 
@@ -170,7 +178,7 @@ class IsEnabled(Assertion):
         elif unit_file_state == "disabled":
             self.register_change(Enabled(self._service))
         else:
-            raise Exception(
+            raise CaerbannogError(
                 f"Unknown state for service '{self._service._name}': UnitFileState={unit_file_state}"
             )
 
@@ -186,7 +194,7 @@ class IsRestarted(Assertion):
 
 class IsReloaded(Assertion):
     def __init__(self, scope: Scope) -> None:
-        super().__init__(f"systemd {str(scope)} daemon is reloaded")
+        super().__init__(f"systemd {scope!s} daemon is reloaded")
         self._scope = scope
 
     def apply(self):

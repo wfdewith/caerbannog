@@ -1,6 +1,5 @@
 from caerbannog import var_loader
 from caerbannog.var_loader import MergeStrategy
-from tests.fixtures import *
 
 
 def test_get_targets_depth_first_diamond_dependency(target):

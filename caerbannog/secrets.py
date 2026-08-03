@@ -1,10 +1,12 @@
 import base64
 import re
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from Cryptodome import Random
 from Cryptodome.Cipher import AES
 from Cryptodome.Protocol import KDF
+
+from caerbannog.error import CaerbannogError
 
 SCRYPT_SALT_SIZE = 32
 
@@ -21,7 +23,7 @@ VERSION = "1"
 
 SECRET_MARKER = f"${HEADER}$"
 
-_cached_keys: Dict[str, bytes] = {}
+_cached_keys: dict[str, bytes] = {}
 
 
 def encrypt(plaintext: bytes, password: str, pretty=True) -> str:
@@ -50,13 +52,13 @@ def decrypt(secret: str, password: str) -> bytes:
     trimmed_secret = re.sub(r"\s", "", secret)
     sections = trimmed_secret.split("$")
     if len(sections) != 7:
-        raise Exception("Unknown secret format")
+        raise CaerbannogError("Unknown secret format")
 
     [_, header, version, salt, nonce, tag, ciphertext] = sections
     if header != HEADER:
-        raise Exception("Unknown secret format")
+        raise CaerbannogError("Unknown secret format")
     if version != VERSION:
-        raise Exception(f"Unknown secret format version: '{version}'")
+        raise CaerbannogError(f"Unknown secret format version: '{version}'")
 
     nonce = _decode(nonce)
     tag = _decode(tag)
@@ -76,7 +78,7 @@ def _lookup_key(salt: str, password: str) -> bytes:
     return key
 
 
-def _derive_key(password: str) -> Tuple[str, bytes]:
+def _derive_key(password: str) -> tuple[str, bytes]:
     salt = _encode(Random.get_random_bytes(SCRYPT_SALT_SIZE))
     key: Any = KDF.scrypt(password, salt, AES_KEY_SIZE, SCRYPT_N, SCRYPT_R, SCRYPT_P)
 
@@ -89,11 +91,11 @@ def _rederive_key(salt: str, password: str) -> bytes:
     return key
 
 
-def _encrypt(key: bytes, plaintext: bytes) -> Tuple[bytes, bytes, bytes]:
+def _encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
     aes = AES.new(key, AES.MODE_GCM)
     ciphertext, tag = aes.encrypt_and_digest(plaintext)
 
-    return aes.nonce, tag, ciphertext
+    return bytes(aes.nonce), tag, ciphertext
 
 
 def _decrypt(key: bytes, nonce: bytes, tag: bytes, ciphertext: bytes) -> bytes:
