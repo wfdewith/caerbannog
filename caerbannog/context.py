@@ -38,6 +38,8 @@ def _load_vars():
 
 
 def _load_host():
+    # Captured before elevation, so that these variables keep describing the
+    # invoking user rather than root once privileges are raised.
     user: dict[str, Any] = {}
     if platform.system() == "Linux":
         user["username"] = pwd.getpwuid(os.getuid()).pw_name

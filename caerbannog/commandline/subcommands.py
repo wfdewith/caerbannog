@@ -15,6 +15,8 @@ def apply(args: Namespace):
     context.init(args)
 
     if args.elevate:
+        # The elevated process reuses this context, so that paths keep
+        # resolving against the invoking user instead of root.
         serialized = context.serialize()
 
         command = [

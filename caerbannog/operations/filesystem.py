@@ -1,3 +1,7 @@
+# These helpers must resolve paths from the context, never from the live system:
+# under `--elevate`, a live lookup would describe root instead of the invoking
+# user.
+
 import os
 
 from caerbannog import context
