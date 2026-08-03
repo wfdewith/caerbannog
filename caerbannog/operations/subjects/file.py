@@ -5,7 +5,7 @@ import shutil
 from collections.abc import Sequence
 from typing import Any, Self
 
-from caerbannog import context, template
+from caerbannog import context, password, secrets, template
 from caerbannog.error import CaerbannogError
 from caerbannog.logging import fmt
 from caerbannog.operations import (
@@ -94,6 +94,13 @@ class File(_FsEntry):
         except UnicodeDecodeError:
             with open(full_path, "rb") as file:
                 content = file.read()
+
+        if isinstance(content, str) and content.startswith(secrets.SECRET_MARKER):
+            content = secrets.decrypt(content, password.get_password())
+            try:
+                content = content.decode("utf-8")
+            except UnicodeDecodeError:
+                pass
 
         return self.has_content(content, create_parents=create_parents)
 
