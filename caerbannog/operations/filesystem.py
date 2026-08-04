@@ -26,6 +26,10 @@ def home_dir(*subpath: str):
     return append_subpath(context.user_home_dir(), *subpath)
 
 
+def documents_dir(*subpath: str):
+    return append_subpath(context.user_documents_dir(), *subpath)
+
+
 def xdg_config_home(*subpath: str):
     dir = context.env().get("XDG_CONFIG_HOME", None)
     if dir is None:

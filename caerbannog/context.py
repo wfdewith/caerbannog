@@ -1,9 +1,11 @@
 import argparse
+import ctypes
 import json
 import os
 import platform
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, TypeVar
+from uuid import UUID
 
 if TYPE_CHECKING:
     # The context and settings modules form a circular dependency. The settings module
@@ -37,6 +39,78 @@ def _load_vars():
     _context["vars"] = var_loader.load_all()
 
 
+# https://learn.microsoft.com/en-us/windows/win32/shell/knownfolderid
+_FOLDERID_DOCUMENTS = UUID("FDD39AD0-238F-46AF-ADB4-6C85480369C7")
+
+
+def _find_documents_dir(home_dir: str) -> str:
+    if platform.system() == "Windows":
+        # This is not necessarily `~/Documents`: it may be relocated, and the
+        # shell is the only authority on where it went.
+        return _known_folder_path(_FOLDERID_DOCUMENTS)
+
+    # An exported variable wins, as it does for the base directories, but
+    # xdg-user-dirs normally only writes `user-dirs.dirs`, so that file is the
+    # authority here. Fall back to the conventional location if it says nothing.
+    return (
+        os.environ.get("XDG_DOCUMENTS_DIR")
+        or _xdg_user_dir("DOCUMENTS", home_dir)
+        or os.path.join(home_dir, "Documents")
+    )
+
+
+# https://www.freedesktop.org/wiki/Software/xdg-user-dirs/
+def _xdg_user_dir(name: str, home_dir: str) -> str | None:
+    # `user-dirs.dirs` is shell syntax, meant to be sourced:
+    #     XDG_DOCUMENTS_DIR="$HOME/Documents"
+    # Paths are absolute, or relative to `$HOME`. A later assignment overrides
+    # an earlier one, as it would when sourced.
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(home_dir, ".config")
+
+    try:
+        with open(
+            os.path.join(config_home, "user-dirs.dirs"), encoding="utf-8"
+        ) as file:
+            lines = file.readlines()
+    except OSError:
+        return None
+
+    found = None
+    for line in lines:
+        key, _, value = line.partition("=")
+        if key.strip() != f"XDG_{name}_DIR":
+            continue
+
+        value = value.strip().strip("\"'")
+        if value.startswith("$HOME"):
+            value = home_dir + value[len("$HOME") :]
+        elif not os.path.isabs(value):
+            value = os.path.join(home_dir, value)
+
+        found = value or None
+
+    return found
+
+
+def _known_folder_path(folder_id: UUID) -> str:
+    guid = (ctypes.c_byte * 16).from_buffer_copy(folder_id.bytes_le)
+    buffer = ctypes.c_wchar_p()
+
+    result = ctypes.windll.shell32.SHGetKnownFolderPath(
+        ctypes.byref(guid), 0, None, ctypes.byref(buffer)
+    )
+    try:
+        if result != 0 or buffer.value is None:
+            raise CaerbannogError(
+                f"could not resolve known folder {folder_id}: "
+                f"SHGetKnownFolderPath returned 0x{result & 0xFFFFFFFF:08X}"
+            )
+        return buffer.value
+    finally:
+        # Freeing a null pointer is a no-op, so this is also safe on failure.
+        ctypes.windll.ole32.CoTaskMemFree(buffer)
+
+
 def _load_host():
     # Captured before elevation, so that these variables keep describing the
     # invoking user rather than root once privileges are raised.
@@ -50,6 +124,8 @@ def _load_host():
     else:
         user["username"] = os.getlogin()
         user["home_dir"] = os.path.expanduser("~")
+
+    user["documents_dir"] = _find_documents_dir(user["home_dir"])
 
     _context["env"] = {k: v for (k, v) in os.environ.items()}
 
@@ -109,6 +185,10 @@ def root() -> str:
 
 def user_home_dir() -> str:
     return _context["host"]["user"]["home_dir"]
+
+
+def user_documents_dir() -> str:
+    return _context["host"]["user"]["documents_dir"]
 
 
 def username() -> str:
