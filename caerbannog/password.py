@@ -3,6 +3,9 @@ import subprocess
 from collections.abc import Callable
 
 from caerbannog import command, context
+from caerbannog.error import CaerbannogError
+
+PASSWORD_COMMAND_TIMEOUT = 30
 
 
 def input_loader() -> str:
@@ -11,12 +14,19 @@ def input_loader() -> str:
 
 def command_loader(cmd: list[str]) -> Callable[[], str]:
     def _command_loader():
-        result = subprocess.run(
-            command.create_user_command(*cmd),
-            text=True,
-            capture_output=True,
-            check=True,
-        )
+        try:
+            result = subprocess.run(
+                command.create_user_command(*cmd),
+                text=True,
+                capture_output=True,
+                check=True,
+                timeout=PASSWORD_COMMAND_TIMEOUT,
+            )
+        except subprocess.TimeoutExpired:
+            raise CaerbannogError(
+                f"Timed out after {PASSWORD_COMMAND_TIMEOUT} seconds "
+                f"while waiting for the password command: {' '.join(cmd)}"
+            )
         return result.stdout.rstrip("\r\n")
 
     return _command_loader
