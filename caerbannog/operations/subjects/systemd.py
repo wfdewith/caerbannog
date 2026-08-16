@@ -124,11 +124,16 @@ class SystemdService(Subject):
             self._create_scoped_command("status", self._name),
             env=context.env(),
             capture_output=True,
-            check=True,
+            check=False,
         )
+
         if exists.returncode == 4:
             raise CaerbannogError(
                 f"Systemd unit '{self._name}' does not exist in {self._scope} scope"
+            )
+        if exists.returncode not in (0, 3):
+            raise CaerbannogError(
+                f"Failed to get status of systemd unit '{self._name}' in {self._scope} scope: {exists.stderr}"
             )
 
         output = subprocess.run(
